@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>江戸物語 — Edo Monogatari</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#1a0f0a;--paper:#f5edd6;--aged:#e8d5a3;--aged2:#dfc98a;
+  --brush:#8b3a1a;--gold:#c9922a;--teal:#2a6b6b;--shadow:#3d1f0d;
+  --dutch:#1a3a6b;--dutch-light:#c8d8f0;--green:#2a5a2a;
+  --red:#8b1a1a;--mid:#6b5030;
+}
+html,body{min-height:100%;background:var(--paper);color:var(--ink);font-family:'Crimson Pro',serif;font-size:15px;line-height:1.5}
+/* ===== LAYOUT ===== */
+#app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;position:relative;overflow:hidden}
+/* ===== HEADER ===== */
+.hdr{background:var(--ink);color:var(--paper);padding:8px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.hdr-title{font-family:'Noto Serif JP',serif;font-size:17px;letter-spacing:3px}
+.hdr-sub{font-size:10px;opacity:.6;letter-spacing:1px;text-transform:uppercase;margin-top:1px}
+.hdr-right{text-align:right;font-size:12px;opacity:.8;line-height:1.4}
+/* ===== LIFE BAR ===== */
+.lifebar{background:var(--shadow);padding:6px 14px;display:flex;gap:10px;align-items:center;flex-shrink:0}
+.lb-stat{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1}
+.lb-label{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:var(--aged);opacity:.8}
+.lb-bar{width:100%;height:5px;background:#ffffff22;border-radius:3px;overflow:hidden}
+.lb-fill{height:100%;border-radius:3px;transition:width .4s}
+.lb-val{font-size:11px;color:var(--paper);font-weight:600}
+/* ===== TABS ===== */
+.tabs{display:flex;background:var(--ink);border-bottom:2px solid var(--gold);flex-shrink:0}
+.tab{flex:1;padding:7px 4px;font-size:11px;font-family:'Noto Serif JP',serif;text-align:center;cursor:pointer;color:var(--aged);opacity:.6;transition:all .2s;border:none;background:none;letter-spacing:.5px}
+.tab.active{opacity:1;color:var(--gold);border-bottom:2px solid var(--gold);margin-bottom:-2px}
+.tab:hover{opacity:.9}
+/* ===== SCREENS ===== */
+.screen{display:none;flex:1;overflow-y:auto;padding:12px 14px}
+.screen.active{display:block}
+/* ===== STORY SCREEN ===== */
+.event-card{background:white;border:1px solid #c9b87a;border-left:4px solid var(--brush);padding:13px 14px;margin-bottom:10px;border-radius:2px;animation:fadein .3s}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.event-type{font-size:10px;color:var(--gold);font-weight:600;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px}
+.event-text{font-style:italic;color:var(--shadow);line-height:1.7;font-size:14.5px}
+.outcome-banner{padding:8px 12px;border-radius:2px;font-size:13px;font-style:italic;margin-bottom:8px;border-left:3px solid;animation:fadein .25s}
+.outcome-good{background:#e8f5e8;border-color:var(--green);color:var(--green)}
+.outcome-bad{background:#fde8e8;border-color:var(--red);color:var(--red)}
+.outcome-neutral{background:var(--aged);border-color:var(--gold);color:var(--shadow)}
+.choices{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
+.choice-btn{background:var(--aged);border:1px solid var(--shadow);color:var(--ink);padding:9px 12px;text-align:left;cursor:pointer;border-radius:2px;font-family:'Crimson Pro',serif;font-size:14px;line-height:1.4;transition:all .15s;width:100%}
+.choice-btn:hover{background:var(--shadow);color:var(--paper)}
+.choice-hint{font-size:11px;color:var(--gold);display:block;margin-top:2px;font-style:italic}
+.choice-btn:hover .choice-hint{color:#f5c87a}
+.age-next-btn{width:100%;padding:10px;background:var(--brush);color:var(--paper);border:none;font-family:'Noto Serif JP',serif;font-size:14px;letter-spacing:2px;cursor:pointer;border-radius:2px;transition:background .2s}
+.age-next-btn:hover{background:var(--shadow)}
+.log-section{margin-top:4px}
+.log-title{font-family:'Noto Serif JP',serif;font-size:11px;color:var(--brush);margin-bottom:6px;letter-spacing:1px;border-bottom:1px solid var(--aged2);padding-bottom:3px}
+.log-entry{font-size:12px;color:var(--mid);padding:3px 0;border-bottom:1px dotted var(--aged);display:flex;gap:6px}
+.log-year{color:var(--brush);font-weight:600;min-width:36px;flex-shrink:0}
+/* ===== STATS SCREEN ===== */
+.profile-card{background:white;border:1px solid #c9b87a;border-radius:3px;padding:14px;margin-bottom:10px}
+.profile-name{font-family:'Noto Serif JP',serif;font-size:18px;color:var(--brush);margin-bottom:2px}
+.profile-sub{font-size:12px;color:var(--mid);margin-bottom:10px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.stat-item{background:var(--aged);border-radius:2px;padding:8px 10px}
+.stat-name{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--mid);margin-bottom:3px}
+.stat-value{font-size:20px;font-weight:600;color:var(--brush)}
+.stat-bar2{height:5px;background:#d4c08a;border-radius:3px;margin-top:4px;overflow:hidden}
+.stat-fill2{height:100%;border-radius:3px}
+.section-title{font-family:'Noto Serif JP',serif;font-size:12px;color:var(--brush);letter-spacing:2px;border-bottom:1px solid var(--aged2);padding-bottom:4px;margin-bottom:8px;margin-top:12px}
+.rel-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px dotted var(--aged)}
+.rel-name{font-size:13px;color:var(--shadow);flex:1}
+.rel-bar{flex:2;height:7px;background:#d4c08a;border-radius:4px;overflow:hidden}
+.rel-fill{height:100%;border-radius:4px}
+.rel-val{font-size:12px;font-weight:600;min-width:24px;text-align:right}
+.flag-grid{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.flag-tag{font-size:11px;padding:3px 8px;border-radius:10px;background:var(--aged2);color:var(--shadow)}
+.flag-tag.on{background:var(--teal);color:white}
+/* ===== INVENTORY SCREEN ===== */
+.inv-section{margin-bottom:14px}
+.money-card{background:var(--ink);color:var(--paper);border-radius:3px;padding:12px 16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.money-label{font-size:11px;opacity:.7;letter-spacing:1px;text-transform:uppercase}
+.money-value{font-family:'Noto Serif JP',serif;font-size:26px;color:var(--gold)}
+.goods-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.good-card{background:white;border:1px solid #c9b87a;border-radius:2px;padding:9px 11px;display:flex;flex-direction:column;gap:2px}
+.good-name{font-size:12px;color:var(--mid)}
+.good-qty{font-size:22px;font-weight:600;color:var(--brush)}
+.good-note{font-size:10px;color:#999;font-style:italic}
+.sell-btn{font-size:11px;padding:3px 8px;background:var(--aged2);border:1px solid var(--shadow);border-radius:2px;cursor:pointer;font-family:inherit;color:var(--shadow);margin-top:4px}
+.sell-btn:hover{background:var(--brush);color:var(--paper)}
+/* ===== JOB SCREEN ===== */
+.job-card{background:white;border:1px solid #c9b87a;border-radius:3px;padding:12px 14px;margin-bottom:8px}
+.job-title{font-family:'Noto Serif JP',serif;font-size:14px;color:var(--brush);margin-bottom:3px}
+.job-desc{font-size:12px;color:var(--mid);margin-bottom:8px;font-style:italic;line-height:1.5}
+.job-do-btn{width:100%;padding:8px;background:var(--aged);border:1px solid var(--shadow);font-family:'Crimson Pro',serif;font-size:13px;cursor:pointer;border-radius:2px;color:var(--ink)}
+.job-do-btn:hover{background:var(--shadow);color:var(--paper)}
+.current-job-banner{background:var(--teal);color:white;padding:9px 12px;border-radius:2px;font-size:13px;margin-bottom:10px;text-align:center;font-style:italic}
+/* ===== ACTIVITIES SCREEN ===== */
+.activity-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.act-btn{background:var(--aged);border:1px solid var(--shadow);border-radius:3px;padding:12px 8px;text-align:center;cursor:pointer;font-family:'Crimson Pro',serif;font-size:13px;color:var(--ink);transition:all .15s}
+.act-btn:hover{background:var(--shadow);color:var(--paper)}
+.act-icon{font-size:22px;display:block;margin-bottom:4px}
+.act-name{font-size:13px;font-weight:600;display:block}
+.act-effect{font-size:10px;color:var(--mid);display:block;margin-top:2px;font-style:italic}
+.act-btn:hover .act-effect{color:#ccc}
+/* ===== DEATH SCREEN ===== */
+#death-screen{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--ink);color:var(--paper);z-index:999;overflow-y:auto;padding:30px 20px;text-align:center;font-family:'Crimson Pro',serif}
+.death-jp{font-family:'Noto Serif JP',serif;font-size:48px;color:var(--brush);margin-bottom:8px}
+.death-title{font-size:22px;font-style:italic;margin-bottom:4px}
+.death-sub{font-size:13px;opacity:.6;margin-bottom:24px}
+.death-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
+.ds{background:#ffffff11;border-radius:3px;padding:10px 6px}
+.ds-l{font-size:9px;text-transform:uppercase;opacity:.6;margin-bottom:4px;letter-spacing:1px}
+.ds-v{font-size:20px;font-weight:600;color:var(--gold)}
+.death-epitaph{font-size:15px;font-style:italic;color:var(--aged);padding:14px;border:1px solid #ffffff22;border-radius:3px;margin-bottom:20px;line-height:1.7}
+.death-log{text-align:left;margin-bottom:20px}
+.death-log-e{font-size:12px;color:#aaa;padding:3px 0;border-bottom:1px solid #ffffff11}
+.death-log-yr{color:var(--gold)}
+.restart-btn{padding:12px 32px;background:var(--brush);color:var(--paper);border:none;font-family:'Noto Serif JP',serif;font-size:15px;letter-spacing:2px;cursor:pointer;border-radius:2px}
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--paper)}
+::-webkit-scrollbar-thumb{background:var(--aged2)}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- HEADER -->
+  <div class="hdr">
+    <div>
+      <div class="hdr-title">江戸物語</div>
+      <div class="hdr-sub">Edo Monogatari</div>
+    </div>
+    <div class="hdr-right">
+      <div id="hdr-era">Kanei 1 · 1624</div>
+      <div id="hdr-age" style="font-size:11px;opacity:.6">Age 18 · Spring</div>
+    </div>
+  </div>
+
+  <!-- LIFE BAR -->
+  <div class="lifebar">
+    <div class="lb-stat">
+      <div class="lb-label">Health</div>
+      <div class="lb-bar"><div class="lb-fill" id="lb-health" style="width:75%;background:#c0392b"></div></div>
+      <div class="lb-val" id="lbv-health">75</div>
+    </div>
+    <div class="lb-stat">
+      <div class="lb-label">Honor</div>
+      <div class="lb-bar"><div class="lb-fill" id="lb-honor" style="width:60%;background:#c9922a"></div></div>
+      <div class="lb-val" id="lbv-honor">60</div>
+    </div>
+    <div class="lb-stat">
+      <div class="lb-label">Wealth</div>
+      <div class="lb-bar"><div class="lb-fill" id="lb-wealth" style="width:40%;background:#2a6b6b"></div></div>
+      <div class="lb-val" id="lbv-wealth">40</div>
+    </div>
+    <div class="lb-stat">
+      <div class="lb-label">Skill</div>
+      <div class="lb-bar"><div class="lb-fill" id="lb-skill" style="width:30%;background:#1a3a6b"></div></div>
+      <div class="lb-val" id="lbv-skill">30</div>
+    </div>
+    <div class="lb-stat">
+      <div class="lb-label">Koku 石</div>
+      <div class="lb-bar"><div class="lb-fill" id="lb-koku" style="width:12%;background:#6b3a8b"></div></div>
+      <div class="lb-val" id="lbv-koku">12</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('story')">物語<br><span style="font-size:9px">Story</span></button>
+    <button class="tab" onclick="switchTab('stats')">状態<br><span style="font-size:9px">Profile</span></button>
+    <button class="tab" onclick="switchTab('inventory')">荷物<br><span style="font-size:9px">Goods</span></button>
+    <button class="tab" onclick="switchTab('jobs')">仕事<br><span style="font-size:9px">Work</span></button>
+    <button class="tab" onclick="switchTab('activities')">活動<br><span style="font-size:9px">Life</span></button>
+  </div>
+
+  <!-- STORY SCREEN -->
+  <div id="screen-story" class="screen active">
+    <div id="outcome-area"></div>
+    <div id="event-area"></div>
+    <div id="choices-area"></div>
+    <button class="age-next-btn" id="age-btn" onclick="nextYear()" style="display:none">
+      次の年へ — Age Into Next Year
+    </button>
+    <div class="log-section" style="margin-top:12px">
+      <div class="log-title">年代記 Chronicle</div>
+      <div id="log-area"></div>
+    </div>
+  </div>
+
+  <!-- STATS SCREEN -->
+  <div id="screen-stats" class="screen">
+    <div class="profile-card">
+      <div class="profile-name" id="p-name">Tanaka Hiroshi</div>
+      <div class="profile-sub" id="p-sub">Merchant · Osaka · Age 18</div>
+      <div class="stat-grid">
+        <div class="stat-item">
+          <div class="stat-name">Health</div>
+          <div class="stat-value" id="ps-health">75</div>
+          <div class="stat-bar2"><div class="stat-fill2" id="psb-health" style="width:75%;background:#c0392b"></div></div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-name">Honor 名誉</div>
+          <div class="stat-value" id="ps-honor">60</div>
+          <div class="stat-bar2"><div class="stat-fill2" id="psb-honor" style="width:60%;background:#c9922a"></div></div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-name">Wealth 富</div>
+          <div class="stat-value" id="ps-wealth">40</div>
+          <div class="stat-bar2"><div class="stat-fill2" id="psb-wealth" style="width:40%;background:#2a6b6b"></div></div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-name">Skill 技</div>
+          <div class="stat-value" id="ps-skill">30</div>
+          <div class="stat-bar2"><div class="stat-fill2" id="psb-skill" style="width:30%;background:#1a3a6b"></div></div>
+        </div>
+      </div>
+      <div class="section-title">Life Details</div>
+      <div id="life-details" style="font-size:13px;color:var(--shadow);line-height:1.8"></div>
+    </div>
+
+    <div class="section-title">Relations 関係</div>
+    <div id="rel-list"></div>
+
+    <div class="section-title">Achievements 実績</div>
+    <div class="flag-grid" id="flag-list"></div>
+  </div>
+
+  <!-- INVENTORY SCREEN -->
+  <div id="screen-inventory" class="screen">
+    <div class="money-card">
+      <div>
+        <div class="money-label">Koku (Rice Currency)</div>
+        <div class="money-value" id="inv-koku">12 石</div>
+      </div>
+      <div style="text-align:right;font-size:12px;opacity:.7">
+        <div id="inv-location"></div>
+        <div id="inv-job" style="margin-top:3px"></div>
+      </div>
+    </div>
+
+    <div class="inv-section">
+      <div class="section-title">Trade Goods 商品</div>
+      <div class="goods-grid" id="goods-grid"></div>
+    </div>
+
+    <div class="inv-section">
+      <div class="section-title">Special Items 特別品</div>
+      <div id="special-items" style="font-size:13px;color:var(--mid);font-style:italic"></div>
+    </div>
+
+    <div class="inv-section">
+      <div class="section-title">Quick Sell</div>
+      <div id="quick-sell" style="font-size:13px;color:var(--mid)"></div>
+    </div>
+  </div>
+
+  <!-- JOBS SCREEN -->
+  <div id="screen-jobs" class="screen">
+    <div id="current-job-area"></div>
+    <div class="section-title">Available Work 仕事</div>
+    <div id="jobs-list"></div>
+  </div>
+
+  <!-- ACTIVITIES SCREEN -->
+  <div id="screen-activities" class="screen">
+    <div class="section-title">Daily Life 日常</div>
+    <div class="activity-grid" id="act-grid"></div>
+    <div class="section-title" style="margin-top:8px">Trade Actions 取引</div>
+    <div class="activity-grid" id="trade-grid"></div>
+    <div class="section-title" style="margin-top:8px">Travel 旅</div>
+    <div class="activity-grid" id="travel-grid"></div>
+  </div>
+</div>
+
+<!-- DEATH SCREEN -->
+<div id="death-screen">
+  <div class="death-jp">往生</div>
+  <div class="death-title" id="d-title">You have passed on</div>
+  <div class="death-sub" id="d-sub"></div>
+  <div class="death-stats" id="d-stats"></div>
+  <div class="death-epitaph" id="d-epitaph"></div>
+  <div class="death-log" id="d-log"></div>
+  <button class="restart-btn" onclick="restartGame()">新たな命 — Begin Again</button>
+</div>
+
+<script>
+// ============================================================
+// GAME STATE
+// ============================================================
+const SAVE_KEY = 'edo_monogatari_save';
+
+function defaultState(){
+  return {
+    name:'Tanaka Hiroshi',year:1624,age:18,season:0,
+    health:75,honor:60,wealth:40,skill:30,koku:12,
+    inventory:{silk:0,lacquerware:0,copper:0,porcelain:0,dutch_goods:0,medicine:0,sake:0,rice:0},
+    relations:{shogunate:40,merchants:55,dutch:20,peasants:50,samurai:35},
+    location:'osaka',job:'unemployed',
+    flags:{guild_member:false,has_permit:false,married:false,been_to_edo:false,
+           dutch_contact:false,arrested:false,visited_dejima:false,
+           rangaku_student:false,pilgrimage_done:false,owns_warehouse:false},
+    log:[],
+    eventHistory:[],
+    eventsSinceRandom:0
+  };
+}
+
+let G = loadState();
+
+function loadState(){
+  try{
+    let s=localStorage.getItem(SAVE_KEY);
+    if(s){let p=JSON.parse(s);return Object.assign(defaultState(),p);}
+  }catch(e){}
+  return defaultState();
+}
+
+function saveState(){
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify(G));}catch(e){}
+}
+
+function restartGame(){
+  localStorage.removeItem(SAVE_KEY);
+  G=defaultState();
+  document.getElementById('death-screen').style.display='none';
+  init();
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+const SEASONS=['Spring','Summer','Autumn','Winter'];
+const SEASON_FLAVOR=['Cherry blossoms drift','Cicadas cry all night','Maple leaves burn red','Frost grips the eaves'];
+const ERA=[{y:1624,n:'Kanei'},{y:1644,n:'Shoho'},{y:1648,n:'Keian'},{y:1652,n:'Joo'},{y:1655,n:'Meireki'},{y:1661,n:'Kanbun'},{y:1673,n:'Enpo'},{y:1681,n:'Tenwa'},{y:1684,n:'Jokyo'}];
+function era(y){let e=ERA.filter(x=>x.y<=y).pop();return e?e.n+' '+(y-e.y+1):'';}
+
+const JOB_NAMES={unemployed:'No Occupation',peddler:'Street Peddler',merchant:'Merchant',guild_merchant:'Guild Merchant',broker:'Trade Broker',interpreter:'Licensed Interpreter',warehouse_owner:'Warehouse Owner',artisan:'Artisan'};
+const LOC_NAMES={osaka:'Osaka',nagasaki:'Nagasaki',edo:'Edo',kyoto:'Kyoto',tokaido:'Tokaido Road'};
+
+function clamp(v,lo=0,hi=100){return Math.max(lo,Math.min(hi,v));}
+function inv(k){return G.inventory[k]||0;}
+function rnd(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+function roll(pct){return Math.random()*100<pct;}
+
+function apply(d){
+  if(d.health!==undefined)G.health=clamp(G.health+d.health);
+  if(d.honor!==undefined)G.honor=clamp(G.honor+d.honor);
+  if(d.wealth!==undefined)G.wealth=clamp(G.wealth+d.wealth);
+  if(d.skill!==undefined)G.skill=clamp(G.skill+d.skill);
+  if(d.koku!==undefined)G.koku=Math.max(0,G.koku+d.koku);
+  if(d.inv)for(let k in d.inv)G.inventory[k]=Math.max(0,(G.inventory[k]||0)+d.inv[k]);
+  if(d.rel)for(let k in d.rel)G.relations[k]=clamp((G.relations[k]||50)+d.rel[k]);
+  if(d.flags)Object.assign(G.flags,d.flags);
+  if(d.job)G.job=d.job;
+  if(d.location)G.location=d.location;
+}
+
+function addLog(msg){G.log.unshift(G.year+':'+msg);if(G.log.length>30)G.log.pop();}
+
+function advSeasons(n=1){
+  G.season+=n;
+  let yrs=Math.floor(G.season/4);
+  G.season=G.season%4;
+  G.year+=yrs;G.age+=yrs;
+  // passive health drain by age
+  if(G.age>50)apply({health:-rnd(2,5)});
+  else if(G.age>35)apply({health:-rnd(0,3)});
+  else apply({health:-rnd(0,2)});
+  // job income
+  let ji={unemployed:0,peddler:1,merchant:2,guild_merchant:3,broker:3,interpreter:4,warehouse_owner:5,artisan:2};
+  let inc=ji[G.job]||0;
+  if(inc>0){G.koku+=inc;addLog('Earned '+inc+' koku from work as '+JOB_NAMES[G.job]+'.');}
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function renderHeader(){
+  document.getElementById('hdr-era').textContent=era(G.year)+' · '+G.year;
+  document.getElementById('hdr-age').textContent='Age '+G.age+' · '+SEASONS[G.season];
+}
+
+function renderLifebar(){
+  ['health','honor','wealth','skill'].forEach(k=>{
+    document.getElementById('lb-'+k).style.width=G[k]+'%';
+    document.getElementById('lbv-'+k).textContent=G[k];
+  });
+  document.getElementById('lb-koku').style.width=Math.min(G.koku,100)+'%';
+  document.getElementById('lbv-koku').textContent=G.koku;
+}
+
+function renderStats(){
+  document.getElementById('p-name').textContent=G.name;
+  document.getElementById('p-sub').textContent=JOB_NAMES[G.job]+' · '+LOC_NAMES[G.location]+' · Age '+G.age;
+  ['health','honor','wealth','skill'].forEach(k=>{
+    document.getElementById('ps-'+k).textContent=G[k];
+    document.getElementById('psb-'+k).style.width=G[k]+'%';
+  });
+  // life details
+  let ld=`<b>Year:</b> ${G.year} (${era(G.year)})<br>
+    <b>Season:</b> ${SEASONS[G.season]} — ${SEASON_FLAVOR[G.season]}<br>
+    <b>Location:</b> ${LOC_NAMES[G.location]}<br>
+    <b>Job:</b> ${JOB_NAMES[G.job]}<br>
+    <b>Married:</b> ${G.flags.married?'Yes — Yuki of Kyoto':'No'}<br>
+    <b>Koku:</b> ${G.koku} 石`;
+  document.getElementById('life-details').innerHTML=ld;
+  // relations
+  const relNames={shogunate:'Tokugawa Shogunate',merchants:'Merchant Class',dutch:'Dutch VOC',peasants:'Common People',samurai:'Samurai Class'};
+  const relColors={shogunate:'#8b3a1a',merchants:'#c9922a',dutch:'#1a3a6b',peasants:'#2a5a2a',samurai:'#4a2a6b'};
+  let rh='';
+  for(let k in G.relations){
+    let v=G.relations[k];
+    let label=v>=70?'Trusted':v>=50?'Neutral':v>=30?'Wary':'Hostile';
+    rh+=`<div class="rel-row">
+      <span class="rel-name">${relNames[k]}</span>
+      <div class="rel-bar"><div class="rel-fill" style="width:${v}%;background:${relColors[k]}"></div></div>
+      <span class="rel-val" style="color:${relColors[k]}">${label}</span>
+    </div>`;
+  }
+  document.getElementById('rel-list').innerHTML=rh;
+  // flags
+  const flagLabels={guild_member:'Guild Member',has_permit:'Trade Permit',married:'Married',been_to_edo:'Visited Edo',dutch_contact:'Dutch Friend',arrested:'Arrested',visited_dejima:'Saw Dejima',rangaku_student:'Rangaku Scholar',pilgrimage_done:'Pilgrim',owns_warehouse:'Warehouse Owner'};
+  let fh='';
+  for(let k in flagLabels){
+    fh+=`<span class="flag-tag ${G.flags[k]?'on':''}">${G.flags[k]?'✓ ':''} ${flagLabels[k]}</span>`;
+  }
+  document.getElementById('flag-list').innerHTML=fh;
+}
+
+function renderInventory(){
+  document.getElementById('inv-koku').textContent=G.koku+' 石';
+  document.getElementById('inv-location').textContent='📍 '+LOC_NAMES[G.location];
+  document.getElementById('inv-job').textContent='⚒ '+JOB_NAMES[G.job];
+
+  const goodDefs={
+    silk:{name:'Silk 絹',icon:'🧵',note:'High value — Dutch want this'},
+    lacquerware:{name:'Lacquerware 漆器',icon:'🏺',note:'Daimyo gifts, +honor'},
+    copper:{name:'Copper 銅',icon:'🔶',note:'VOC needs for European mints'},
+    porcelain:{name:'Porcelain 磁器',icon:'🫙',note:'Delicate — loses if careless'},
+    dutch_goods:{name:'Dutch Clocks 時計',icon:'⚙️',note:'Rare — sell to lords'},
+    medicine:{name:'Dutch Medicine 薬',icon:'⚗️',note:'Physicians pay well'},
+    sake:{name:'Sake 酒',icon:'🍶',note:'Common trade, steady demand'},
+    rice:{name:'Rice 米',icon:'🌾',note:'Staple — famine = gold'}
+  };
+
+  let gh='';
+  for(let k in goodDefs){
+    let d=goodDefs[k],qty=inv(k);
+    gh+=`<div class="good-card">
+      <div style="font-size:18px">${d.icon}</div>
+      <div class="good-name">${d.name}</div>
+      <div class="good-qty">${qty}</div>
+      <div class="good-note">${d.note}</div>
+    </div>`;
+  }
+  document.getElementById('goods-grid').innerHTML=gh;
+
+  // special
+  let spec=[];
+  if(G.flags.has_permit)spec.push('📜 Official Trade Permit — allows legal Dutch trade');
+  if(G.flags.owns_warehouse)spec.push('🏢 Warehouse in '+LOC_NAMES[G.location]);
+  if(G.flags.rangaku_student)spec.push('📚 Dutch Learning Texts (Rangaku)');
+  document.getElementById('special-items').innerHTML=spec.length?spec.map(s=>`<div style="padding:4px 0;border-bottom:1px dotted var(--aged)">${s}</div>`).join(''):'<i>No special items.</i>';
+
+  // quick sell
+  let qs=[];
+  const prices={silk:6,copper:4,lacquerware:3,porcelain:5,dutch_goods:18,medicine:8,sake:2,rice:3};
+  for(let k in prices){
+    if(inv(k)>0){
+      qs.push(`<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px dotted var(--aged)">
+        <span style="flex:1">${goodDefs[k].name} (×${inv(k)})</span>
+        <span style="color:var(--brush)">${prices[k]*inv(k)} koku est.</span>
+        <button class="sell-btn" onclick="quickSell('${k}',${prices[k]})">Sell All</button>
+      </div>`);
+    }
+  }
+  document.getElementById('quick-sell').innerHTML=qs.length?qs.join(''):'<i style="color:#999">No goods to sell.</i>';
+}
+
+function quickSell(k,price){
+  let qty=inv(k),total=qty*price;
+  if(!qty)return;
+  apply({inv:{[k]:-qty},koku:total,wealth:Math.floor(total/3)});
+  addLog('Sold '+qty+' '+k+' for '+total+' koku.');
+  showOutcome('Sold '+qty+'× '+k+' → +'+total+' koku','good');
+  renderInventory();renderLifebar();saveState();
+}
+
+function renderJobs(){
+  let cj=document.getElementById('current-job-area');
+  cj.innerHTML=`<div class="current-job-banner">Current: ${JOB_NAMES[G.job]} · Earns ${({unemployed:0,peddler:1,merchant:2,guild_merchant:3,broker:3,interpreter:4,warehouse_owner:5,artisan:2}[G.job]||0)} koku/season</div>`;
+
+  const JOBS=[
+    {id:'peddler',title:'Street Peddler 振り売り',desc:'Sell small goods from a cart. Humble but honest work. No requirements.',cost:0,earn:1,req:()=>true,
+     action(){apply({job:'peddler',health:-3,skill:+2});addLog('Became a street peddler. Hard on the feet, good for the soul.');showOutcome('Now working as a Street Peddler. +1 koku/season.','good');}},
+    {id:'merchant',title:'Independent Merchant 商人',desc:'Trade goods in the marketplace without guild affiliation. Needs 10+ koku capital.',cost:0,earn:2,req:()=>G.koku>=10,
+     action(){apply({job:'merchant',skill:+3,honor:+2});addLog('Established as an independent merchant.');showOutcome('Now a merchant. +2 koku/season.','good');}},
+    {id:'guild_merchant',title:'Guild Merchant 座商人',desc:'Join the merchant guild. Requires guild membership and 20+ koku. Premium routes.',cost:0,earn:3,req:()=>G.flags.guild_member&&G.koku>=20,
+     action(){apply({job:'guild_merchant',honor:+5,rel:{merchants:+10}});addLog('Became a Guild Merchant. Respected routes now open.');showOutcome('Guild Merchant! +3 koku/season.','good');}},
+    {id:'broker',title:'Trade Broker 仲買人',desc:'Act as a middleman. Requires 40+ skill and merchant contacts.',cost:0,earn:3,req:()=>G.skill>=40&&G.relations.merchants>=50,
+     action(){apply({job:'broker',skill:+4,wealth:+5});addLog('Working as a trade broker. Connections are your currency.');showOutcome('Now a Trade Broker. +3 koku/season.','good');}},
+    {id:'interpreter',title:'Licensed Interpreter 通詞',desc:'Official Dutch interpreter at Nagasaki. Must have permit, 50+ skill, be in Nagasaki.',cost:0,earn:4,req:()=>G.flags.has_permit&&G.skill>=50&&G.location==='nagasaki',
+     action(){apply({job:'interpreter',honor:+8,rel:{dutch:+15,shogunate:+10}});addLog('Appointed as Licensed Interpreter for the VOC at Dejima.');showOutcome('Licensed Interpreter! Prestigious. +4 koku/season.','good');}},
+    {id:'artisan',title:'Artisan 職人',desc:'Produce lacquerware or porcelain. Builds skill and produces goods.',cost:0,earn:2,req:()=>G.skill>=20,
+     action(){apply({job:'artisan',skill:+5,inv:{lacquerware:1}});addLog('Took up artisan work. The wheel turns; the glaze hardens.');showOutcome('Artisan work begun. Produces goods each season.','good');}},
+    {id:'warehouse_owner',title:'Warehouse Owner 倉主',desc:'Own a warehouse. Need 30 koku investment and 60+ wealth.',cost:30,earn:5,req:()=>G.koku>=30&&G.wealth>=60,
+     action(){apply({job:'warehouse_owner',koku:-30,flags:{owns_warehouse:true},wealth:+10});addLog('Opened a warehouse. Now charging storage fees to other merchants.');showOutcome('Warehouse opened! -30 koku investment, +5 koku/season.','neutral');}},
+    {id:'join_guild',title:'Join Merchant Guild 座に入る',desc:'Pay 8 koku to join the guild. Unlocks guild routes and guild_merchant job.',cost:8,earn:0,req:()=>!G.flags.guild_member&&G.koku>=8,
+     action(){apply({koku:-8,flags:{guild_member:true},honor:+8,rel:{merchants:+15}});addLog('Joined the merchants guild. New doors, new obligations.');showOutcome('Guild membership gained! -8 koku.','neutral');}},
+  ];
+
+  let jh='';
+  JOBS.forEach(j=>{
+    let avail=j.req();
+    jh+=`<div class="job-card" style="${!avail?'opacity:.5':''}">
+      <div class="job-title">${j.title}</div>
+      <div class="job-desc">${j.desc}${j.cost?' Cost: '+j.cost+' koku.':''}</div>
+      <button class="job-do-btn" onclick="doJob('${j.id}')" ${!avail||G.job===j.id?'disabled':''}>
+        ${G.job===j.id?'Current Job':'Take This Work'}
+      </button>
+    </div>`;
+  });
+  document.getElementById('jobs-list').innerHTML=jh;
+
+  window._jobActions={};
+  JOBS.forEach(j=>window._jobActions[j.id]=j.action);
+}
+
+function doJob(id){
+  if(window._jobActions&&window._jobActions[id]){
+    window._jobActions[id]();
+    renderJobs();renderLifebar();renderStats();saveState();
+  }
+}
+
+function renderActivities(){
+  const DAILY=[
+    {icon:'🍵',name:'Tea Ceremony',effect:'+Honor, +Health',action(){apply({honor:+5,health:+8,koku:-1});addLog('Attended a tea ceremony. Serenity restored.');showOutcome('Tea ceremony — +5 honor, +8 health','good');advSeasons(1);checkAndRender();}},
+    {icon:'⚔️',name:'Sword Practice',effect:'+Skill, -Health',action(){apply({skill:+6,health:-4});addLog('Practiced swordsmanship. Bruised but sharper.');showOutcome('Sword practice — +6 skill','good');advSeasons(1);checkAndRender();}},
+    {icon:'📖',name:'Study Letters',effect:'+Skill, +Honor',action(){apply({skill:+8,honor:+3,koku:-1});addLog('Spent the season studying letters and trade law.');showOutcome('Studied — +8 skill','good');advSeasons(1);checkAndRender();}},
+    {icon:'🏥',name:'Visit Doctor',effect:'+Health (costs 3 koku)',action(){if(G.koku>=3){apply({health:+20,koku:-3});addLog('Visited the town physician. Health improves.');}else{addLog('Not enough koku for a doctor.');}showOutcome(G.koku>=0?'+20 health':'Not enough koku','good');advSeasons(1);checkAndRender();}},
+    {icon:'🍶',name:'Drink Sake',effect:'+Health short, -Honor',action(){apply({health:+5,honor:-3,koku:-1});addLog('Drank sake at the teahouse. Simple pleasures.');showOutcome('Sake night — fleeting comfort','neutral');advSeasons(1);checkAndRender();}},
+    {icon:'🙏',name:'Visit Temple',effect:'+Honor, +Health',action(){apply({honor:+8,health:+6,rel:{peasants:+5}});addLog('Visited the local temple. Prayers offered.');showOutcome('Temple visit — peace of mind','good');advSeasons(1);checkAndRender();}},
+  ];
+  const TRADE=[
+    {icon:'🧵',name:'Buy Silk',effect:'Cost 5 koku per bolt',action(){let n=Math.min(3,Math.floor(G.koku/5));if(n>0){apply({koku:-n*5,inv:{silk:+n}});addLog('Bought '+n+' bolts of silk.');}else{addLog('Not enough koku for silk.');}showOutcome(n>0?'Bought '+n+' silk bolts':'Insufficient koku','neutral');renderInventory();saveState();}},
+    {icon:'🔶',name:'Buy Copper',effect:'Cost 3 koku each',action(){let n=Math.min(5,Math.floor(G.koku/3));if(n>0){apply({koku:-n*3,inv:{copper:+n}});addLog('Bought '+n+' copper ingots.');}else{addLog('Not enough koku.');}showOutcome(n>0?'Bought '+n+' copper':'Insufficient koku','neutral');renderInventory();saveState();}},
+    {icon:'🍶',name:'Buy Sake',effect:'Cost 2 koku each',action(){let n=Math.min(6,Math.floor(G.koku/2));if(n>0){apply({koku:-n*2,inv:{sake:+n}});addLog('Bought '+n+' sake casks.');}showOutcome(n>0?'Bought '+n+' sake':'No koku','neutral');renderInventory();saveState();}},
+    {icon:'🌾',name:'Buy Rice',effect:'Cost 2 koku per sack',action(){let n=Math.min(8,Math.floor(G.koku/2));if(n>0){apply({koku:-n*2,inv:{rice:+n}});addLog('Bought '+n+' sacks of rice.');}showOutcome(n>0?'Bought '+n+' rice':'No koku','neutral');renderInventory();saveState();}},
+    {icon:'🏺',name:'Buy Lacquerware',effect:'Cost 2 koku each',action(){let n=Math.min(4,Math.floor(G.koku/2));if(n>0){apply({koku:-n*2,inv:{lacquerware:+n}});addLog('Bought '+n+' lacquerware sets.');}showOutcome(n>0?'Bought '+n+' lacquerware':'No koku','neutral');renderInventory();saveState();}},
+    {icon:'📜',name:'Apply for Trade Permit',effect:'4 koku + time — unlocks Dejima',action(){if(G.flags.has_permit){showOutcome('You already have a permit.','neutral');return;}if(G.koku>=4){apply({koku:-4,flags:{has_permit:true},honor:+10,rel:{shogunate:+12},skill:+5});addLog('Received official trade permit. Dejima trade now legal.');showOutcome('Trade Permit obtained! +honor, +shogunate','good');advSeasons(3);}else{showOutcome('Need 4 koku to apply.','bad');}checkAndRender();saveState();}},
+  ];
+  const TRAVEL=[
+    {icon:'🌊',name:'Travel to Nagasaki',effect:'See Dejima — 3 koku journey',action(){if(G.koku>=3){G.location='nagasaki';G.flags.visited_dejima=true;apply({koku:-3,health:-4});addLog('Arrived in Nagasaki. The harbor smells of foreign timber.');showOutcome('Arrived in Nagasaki','good');advSeasons(2);}else{showOutcome('Need 3 koku for travel','bad');}checkAndRender();saveState();}},
+    {icon:'🏯',name:'Travel to Edo',effect:'The Shogun\'s city — 4 koku',action(){if(G.koku>=4){G.location='edo';G.flags.been_to_edo=true;apply({koku:-4,health:-5,honor:+3});addLog('Arrived in Edo. A million souls, endless canals.');showOutcome('Arrived in Edo — the great city','good');advSeasons(3);}else{showOutcome('Need 4 koku for travel','bad');}checkAndRender();saveState();}},
+    {icon:'⛩️',name:'Travel to Kyoto',effect:'The Imperial city — 2 koku',action(){if(G.koku>=2){G.location='kyoto';apply({koku:-2,honor:+5,health:-3});addLog('Arrived in Kyoto. The old capital breathes ceremony.');showOutcome('Arrived in Kyoto','good');advSeasons(2);}else{showOutcome('Need 2 koku','bad');}checkAndRender();saveState();}},
+    {icon:'🏠',name:'Return to Osaka',effect:'Home city — 2 koku',action(){if(G.koku>=2){G.location='osaka';apply({koku:-2,health:+5});addLog('Returned to Osaka. The familiar scent of the river.');showOutcome('Back in Osaka','neutral');advSeasons(2);}else{showOutcome('Need 2 koku','bad');}checkAndRender();saveState();}},
+  ];
+
+  function makeGrid(arr){
+    return arr.map((a,i)=>`<div class="act-btn" onclick="doActivity(${arr===DAILY?0:arr===TRADE?1:2},${i})">
+      <span class="act-icon">${a.icon}</span>
+      <span class="act-name">${a.name}</span>
+      <span class="act-effect">${a.effect}</span>
+    </div>`).join('');
+  }
+  document.getElementById('act-grid').innerHTML=makeGrid(DAILY);
+  document.getElementById('trade-grid').innerHTML=makeGrid(TRADE);
+  document.getElementById('travel-grid').innerHTML=makeGrid(TRAVEL);
+  window._actData=[DAILY,TRADE,TRAVEL];
+}
+
+function doActivity(group,idx){
+  window._actData[group][idx].action();
+}
+
+// ============================================================
+// EVENTS ENGINE
+// ============================================================
+const EVENTS=[
+  // === STARTING ===
+  {id:'start',oneShot:true,
+   event:"Father's Legacy",text:"Your father passes, leaving you his modest trading stall and a debt of 10 koku to the Murata moneylenders. The city of Osaka stretches before you, indifferent. What do you do?",
+   choices:[
+    {label:"Pay the debt immediately",hint:"Lose koku, gain honor",
+     action(){apply({koku:-10,honor:+12,rel:{merchants:+10}});addLog('Paid father\'s debt in full. The Muratas nod approvingly.');}},
+    {label:"Negotiate — offer half now, work off the rest",hint:"Skill check",
+     action(){if(G.skill>=35){apply({koku:-5,honor:+5,rel:{merchants:+5}});addLog('Negotiated successfully. Half now, half in service.');}
+       else{apply({koku:-5,honor:-8,rel:{merchants:-10}});addLog('Negotiation failed. The moneylenders are unsatisfied.');}
+     }},
+    {label:"Flee to Edo and start fresh",hint:"Dishonorable but free",
+     action(){G.location='edo';G.flags.been_to_edo=true;apply({honor:-15});addLog('Fled your debts. Edo is a city of new names.');}},
+  ]},
+
+  // === MERCHANT LIFE ===
+  {id:'guild_invite',oneShot:true,
+   event:"Guild Invitation",text:"The Osaka merchants' guild master, a portly man with ink-stained fingers, invites you to join. Membership costs 8 koku but opens legal trade routes, warehousing rights, and guild protection under the law.",
+   choices:[
+    {label:"Join the guild (8 koku)",hint:"Opens guild jobs & routes",
+     action(){if(G.koku>=8){apply({koku:-8,honor:+8,rel:{merchants:+15},skill:+5,flags:{guild_member:true}});addLog('Joined the merchants guild. The seal is pressed in red.');}
+       else{apply({honor:-2});addLog('Could not afford the guild fee.');}
+     }},
+    {label:"Work as a broker to earn membership instead",hint:"+skill, delayed access",
+     action(){apply({skill:+10,rel:{merchants:+8}});addLog('Began brokering to earn guild standing. A slower path.');}},
+    {label:"Decline — independence has value",hint:"Keep your koku",
+     action(){apply({koku:+2,rel:{merchants:-5}});addLog('Declined. Some guilds are traps dressed as doors.');}},
+  ]},
+
+  {id:'rival_merchant',
+   event:"A Rival Emerges",text:"Goto Kenji, a young merchant from Kyoto, is undercutting your prices at the Osaka market. His goods are cheaper — suspiciously so. Rumor says he bribes the weighmaster.",
+   choices:[
+    {label:"Report him to guild authorities",hint:"+honor, may backfire",
+     action(){if(G.relations.merchants>=50){apply({honor:+8,rel:{merchants:+10}});addLog('Reported Goto. The guild investigates.');}
+       else{apply({honor:-3,rel:{merchants:-8}});addLog('Without connections, your complaint goes nowhere.');}
+     }},
+    {label:"Undercut his prices — out-compete him",hint:"Lose koku, gain market share",
+     action(){apply({koku:-6,wealth:+15,skill:+5});addLog('Slashed prices. Goto retreats, muttering.');}},
+    {label:"Approach him — propose splitting territories",hint:"Make a truce",
+     action(){apply({rel:{merchants:+8},skill:+5,honor:+3});addLog('Made a truce with Goto. Two wolves sharing the territory.');}},
+  ]},
+
+  {id:'bumper_harvest',
+   event:"Bumper Harvest",text:"Rice floods the market this autumn. Prices collapse. Merchants who held rice stocks are ruined. But the low prices mean you can acquire other goods cheaply.",
+   choices:[
+    {label:"Dump your rice immediately at any price",hint:"Save what you can",
+     action(){let r=inv('rice');apply({inv:{rice:-r},koku:r*1});addLog('Sold rice at near-loss. Better than nothing.');}},
+    {label:"Invest in silk and copper while prices are low",hint:"Spend koku to buy cheap",
+     action(){let n=Math.min(3,Math.floor(G.koku/4));apply({koku:-n*4,inv:{silk:+n,copper:+n}});addLog('Bought goods cheap during the harvest glut.');}},
+    {label:"Wait — famine often follows glut",hint:"Hold, speculate",
+     action(){apply({skill:+5,honor:+2});addLog('Held your position. Patience is a merchant\'s virtue.');}},
+  ]},
+
+  {id:'kabuki_investment',
+   event:"Kabuki Patronage",text:"A kabuki troupe seeks a patron. Supporting them would cost 5 koku but spread your name among Edo's merchant class. Art and commerce are not so separate.",
+   choices:[
+    {label:"Become their patron (5 koku)",hint:"+honor, +merchant relations",
+     action(){if(G.koku>=5){apply({koku:-5,honor:+12,rel:{merchants:+12,samurai:+8},wealth:+5});addLog('Became patron of the Sakura-za kabuki troupe. Your name on the playbill.');}
+       else addLog('Too poor to be a patron today.');}},
+    {label:"Attend but not sponsor",hint:"+health, small honor",
+     action(){apply({health:+5,honor:+3,koku:-1});addLog('Watched a magnificent performance. The actors moved like wind.');}},
+    {label:"Skip — no time for theater",hint:"Nothing gained",
+     action(){addLog('Let the opportunity pass. Work calls.');}},
+  ]},
+
+  // === NAGASAKI / DEJIMA ===
+  {id:'dejima_first',
+   event:"First Sight of Dejima",req:()=>G.flags.visited_dejima,oneShot:true,
+   text:"You stand at the bridge to the tiny fan-shaped island. A Dutch merchant in blue wool watches from a warehouse doorway. His name, you learn from a passing interpreter, is Hendrik van Meer of the VOC. He has silk on his mind. The guards are strict. You will need a permit to approach legally.",
+   choices:[
+    {label:"Apply for an interpreter's permit immediately",hint:"Legal path — 4 koku, 3 seasons",
+     action(){if(G.koku>=4){apply({koku:-4,flags:{has_permit:true},honor:+10,rel:{shogunate:+12}});addLog('Applied for interpreter permit. Granted after three months of bureaucracy.');}
+       else{apply({honor:-2});addLog('Cannot afford the permit fee.');}
+     }},
+    {label:"Pass a message through a go-between",hint:"Illegal — chance of arrest",
+     action(){if(roll(75)){apply({rel:{dutch:+15},koku:+8,honor:-5,flags:{dutch_contact:true}});addLog('Message delivered secretly. Hendrik sends back a gift of nutmeg.');}
+       else{apply({honor:-18,rel:{shogunate:-18},koku:-5,flags:{arrested:true}});addLog('Caught by the guard. Fined and briefly detained.');}
+     }},
+    {label:"Study the trade rules before acting",hint:"+skill, safer",
+     action(){apply({skill:+10,koku:-1});addLog('Spent weeks studying the Nagasaki trading laws. Knowledge is protection.');}},
+  ]},
+
+  {id:'voc_silk_deal',req:()=>G.flags.dutch_contact||G.flags.has_permit,
+   event:"Hendrik's Silk Order",text:"Hendrik van Meer needs 3 bolts of silk for a VOC cargo. He will pay 8 koku per bolt — far above market rate. But the transaction must be logged or hidden.",
+   choices:[
+    {label:"Sell silks through official permit channels",hint:"Legal, paperwork required",
+     action(){let s=inv('silk');if(s>=3){apply({inv:{silk:-3},koku:+24,honor:+5,rel:{dutch:+10,shogunate:+5}});addLog('Sold 3 silk bolts legally to Hendrik. 24 koku profit, records filed.');}
+       else{apply({rel:{dutch:+2}});addLog('Didn\'t have enough silk for Hendrik\'s order.');}
+     }},
+    {label:"Sell illegally for extra profit (no tax)",hint:"More koku, risk",
+     action(){let s=inv('silk');if(s>=3){if(roll(80)){apply({inv:{silk:-3},koku:+30,honor:-5,rel:{dutch:+12}});addLog('Sold silk off the books. 30 koku — but someone may have seen.');}
+       else{apply({inv:{silk:-3},koku:+10,honor:-15,rel:{shogunate:-15}});addLog('Off-book deal exposed. Fined heavily. Silk confiscated, partial payment given.');}}
+       else{addLog('No silk to sell.');}
+     }},
+    {label:"Refuse — the risk isn't worth it",hint:"Stable, safe",
+     action(){apply({honor:+3});addLog('Declined Hendrik\'s order. Safety first.');}},
+  ]},
+
+  {id:'voc_copper',req:()=>(G.flags.dutch_contact||G.flags.has_permit)&&inv('copper')>=2,
+   event:"VOC Copper Purchase",text:"The Dutch East India Company needs Japanese copper for European mints. Copper is the empire of Japan's great export — and Hendrik offers 5 koku per ingot.",
+   choices:[
+    {label:"Sell all copper to Hendrik",hint:"Strong profit",
+     action(){let c=inv('copper');apply({inv:{copper:-c},koku:+c*5,rel:{dutch:+8}});addLog('Sold '+c+' copper ingots to the VOC. Excellent price.');}},
+    {label:"Sell half — keep reserves",hint:"Balanced approach",
+     action(){let c=Math.ceil(inv('copper')/2);apply({inv:{copper:-c},koku:+c*5,rel:{dutch:+5}});addLog('Sold '+c+' copper, kept reserves.');}},
+    {label:"Negotiate for Dutch goods in exchange",hint:"Get exotic goods instead",
+     action(){let c=inv('copper');if(c>=3){apply({inv:{copper:-3,dutch_goods:+2},rel:{dutch:+10},honor:+3});addLog('Traded 3 copper for 2 Dutch clockwork pieces. Excellent deal.');}
+       else{apply({rel:{dutch:+3}});addLog('Not enough copper to barter.');}
+     }},
+  ]},
+
+  {id:'dejima_fire',req:()=>G.location==='nagasaki',
+   event:"Fire at the Warehouses",text:"A lantern tips in the wind. The warehouses on the Nagasaki waterfront catch. Your goods are inside.",
+   choices:[
+    {label:"Rush in to save your silk and copper",hint:"Risky — health damage",
+     action(){if(roll(60)){let s=inv('silk'),c=inv('copper');addLog('Saved most of your goods from the flames.');showOutcome('Escaped with goods','good');}
+       else{apply({inv:{silk:-Math.ceil(inv('silk')/2),copper:-Math.ceil(inv('copper')/2)},health:-20});addLog('Burned trying. Lost half your goods, took injuries.');}
+     }},
+    {label:"Let the goods burn — your life matters more",hint:"Lose goods, keep health",
+     action(){apply({inv:{silk:-inv('silk'),lacquerware:-inv('lacquerware')},honor:+3});addLog('Watched your goods burn. Rebuilt from nothing before; can again.');}},
+    {label:"Organize workers to form a bucket line",hint:"Skill check",
+     action(){if(G.skill>=45){apply({honor:+12,rel:{merchants:+10},health:-5});addLog('Organized the bucket line. Saved the warehouse. A hero of the harbor.');}
+       else{apply({health:-12,koku:-8});addLog('The effort was too little. Fire consumed most goods.');}
+     }},
+  ]},
+
+  {id:'dutch_science',req:()=>G.flags.dutch_contact||G.flags.has_permit,
+   event:"Rangaku — Dutch Learning",text:"Hendrik shows you illustrated Dutch books. Anatomy. Astronomy. Optics. 'Rangaku' — Dutch learning — is spreading among curious scholars. A forbidden knowledge that could elevate or destroy you.",
+   choices:[
+    {label:"Study Dutch medicine texts in secret",hint:"+skill, slight risk",
+     action(){apply({skill:+15,honor:+5,flags:{rangaku_student:true},rel:{dutch:+10},koku:-2});addLog('Studied Dutch anatomy. The body is a landscape you now know.');}},
+    {label:"Study cartography and navigation",hint:"+skill, +trade opportunities",
+     action(){apply({skill:+12,wealth:+5,flags:{rangaku_student:true},koku:-2,rel:{dutch:+8}});addLog('Studied Dutch maps. Trade routes bloom in your imagination.');}},
+    {label:"Inform the Shogunate authorities",hint:"+shogunate, -dutch",
+     action(){apply({rel:{shogunate:+15,dutch:-25},honor:-5,koku:+3});addLog('Reported the Dutch books. Received a reward. Hendrik never forgave you.');}},
+  ]},
+
+  // === SHOGUNATE ===
+  {id:'magistrate_visit',
+   event:"Magistrate's Inspection",text:"A magistrate and four officials arrive to audit your trade ledgers. The Sakoku edict requires all foreign contacts to be documented. Every koku of unreported trade is a crime.",
+   choices:[
+    {label:"Open all records completely",hint:"Honest — risky if you have secrets",
+     action(){if((G.flags.dutch_contact&&!G.flags.has_permit)||G.flags.arrested){apply({honor:-10,koku:-8,rel:{shogunate:-15}});addLog('Officials find irregularities. Fines levied.');}
+       else{apply({honor:+12,rel:{shogunate:+15}});addLog('Records are immaculate. The magistrate departs with a nod.');}
+     }},
+    {label:"Bribe the junior official",hint:"5 koku — moderate risk",
+     action(){if(G.koku>=5){if(roll(78)){apply({koku:-5,rel:{shogunate:-3}});addLog('Bribe accepted quietly. Records pass without scrutiny.');}
+       else{apply({koku:-10,honor:-20,rel:{shogunate:-20}});addLog('Bribe rejected and reported. Heavy scandal.');}}
+       else{apply({honor:-5});addLog('Tried to bribe without enough koku. Humiliating.');}
+     }},
+    {label:"Hide sensitive documents beforehand",hint:"Skill check ≥40",
+     action(){if(G.skill>=40){apply({honor:+2});addLog('Documents hidden perfectly. Inspection passes.');}
+       else{apply({honor:-15,koku:-6,rel:{shogunate:-12}});addLog('Clumsy concealment discovered. The magistrate is displeased.');}
+     }},
+  ]},
+
+  {id:'shogun_gift',req:()=>G.relations.samurai>=50,
+   event:"Gift for the Shogun",text:"A high-ranking samurai lord asks you to procure a gift for the Shogun's household — something exotic. He needs Dutch clockwork, fine silk, or exquisite porcelain. This could define your reputation.",
+   choices:[
+    {label:"Offer Dutch clockwork (costs 1 dutch_goods)",hint:"+honor, +samurai",
+     action(){if(inv('dutch_goods')>=1){apply({inv:{dutch_goods:-1},honor:+18,rel:{samurai:+20,shogunate:+12},koku:+10});addLog('The Shogun\'s household marveled at the Dutch clock. Your name rises.');}
+       else{apply({honor:-3});addLog('Had no Dutch goods to offer. Disappointing.');}
+     }},
+    {label:"Offer your finest silk",hint:"+honor, +samurai",
+     action(){if(inv('silk')>=2){apply({inv:{silk:-2},honor:+12,rel:{samurai:+15},koku:+8});addLog('Silk presented to the lord\'s household. Rich fabric, richer gratitude.');}
+       else{addLog('Not enough silk.');}
+     }},
+    {label:"Decline — too complicated",hint:"Safe but no gain",
+     action(){apply({rel:{samurai:-5}});addLog('Declined the request. The samurai was politely cold afterward.');}},
+  ]},
+
+  {id:'sakoku_tightening',
+   event:"Sakoku Laws Tighten",text:"The Shogunate announces new restrictions on foreign trade. All Dutch contact must now be mediated through official interpreters. Unlicensed dealings face beheading, not merely fines. A cold wind from Edo.",
+   choices:[
+    {label:"Immediately formalize all Dutch dealings",hint:"+shogunate, costs koku",
+     action(){apply({koku:-6,honor:+10,rel:{shogunate:+12}});addLog('Formalized all trading arrangements before the deadline.');}},
+    {label:"Continue quietly — you have good contacts",hint:"Risk increases significantly",
+     action(){apply({honor:-5,rel:{shogunate:-10}});addLog('Kept operating in the grey zone. The risk grows.');}},
+    {label:"Pivot away from Dutch trade entirely",hint:"Safer, lose Dutch relations",
+     action(){apply({rel:{dutch:-15,shogunate:+10},honor:+5});addLog('Withdrew from Dutch trade. Some doors close so others may open.');}},
+  ]},
+
+  // === LIFE EVENTS ===
+  {id:'marriage',req:()=>!G.flags.married&&G.age>=20,oneShot:true,
+   event:"Matchmaker's Visit",text:"A professional matchmaker presents Yuki, daughter of a Kyoto silk dyer. She is calm, literate, and her family has trade connections you lack. Marriage would mean commitments — but also a partner.",
+   choices:[
+    {label:"Accept — marry Yuki",hint:"+honor, +silk connections",
+     action(){G.flags.married=true;apply({honor:+12,rel:{merchants:+10},health:+5,koku:-6,inv:{silk:+2}});addLog('Married Yuki of Kyoto. Her family sends silk as wedding gift.');}},
+    {label:"Ask for time to consider",hint:"Maybe next year",
+     action(){apply({honor:-2});addLog('The matchmaker will return. Perhaps.');}},
+    {label:"Decline — no time for family now",hint:"-honor, stay free",
+     action(){apply({honor:-6,rel:{merchants:-5}});addLog('Declined. The matchmaker clicked her tongue.');}},
+  ]},
+
+  {id:'child_born',req:()=>G.flags.married&&!G.flags.child_born,oneShot:true,
+   event:"A Child is Born",text:"Yuki presents you with a son. You hold him in the lamplight — small, absolute, the future distilled into a face. He will need everything you can build.",
+   choices:[
+    {label:"Name him Ichiro — 'first son'",hint:"+honor, +health to you",
+     action(){apply({honor:+10,health:+8,koku:-3,flags:{child_born:true}});addLog('Named your son Ichiro. A name to carry your legacy.');}},
+    {label:"Hold a naming ceremony for the community",hint:"+honor, +peasants",
+     action(){apply({honor:+15,rel:{peasants:+15,merchants:+8},koku:-5,flags:{child_born:true}});addLog('Hosted a naming ceremony. The whole ward celebrated.');}},
+  ]},
+
+  {id:'great_fire',
+   event:"City Fire 大火",text:"Edo's wooden buildings are tinder. A fire starts near the market and spreads faster than prayer. The sky turns orange. Your warehouse catches.",
+   choices:[
+    {label:"Save goods — run to your warehouse",hint:"Lose health, save koku",
+     action(){let saved=rnd(3,8);apply({health:-18,koku:+saved});addLog('Rescued '+saved+' koku of goods from the blaze. Singed but richer than neighbors.');}},
+    {label:"Help neighbors escape first",hint:"+honor, +peasants — lose goods",
+     action(){apply({honor:+20,rel:{peasants:+20,merchants:+10},health:-10,koku:-rnd(3,6)});addLog('Carried neighbors to safety. Your goods are ash, but you are remembered.');}},
+    {label:"Lead the bucket brigade",hint:"Skill check ≥45",
+     action(){if(G.skill>=45){apply({honor:+15,rel:{peasants:+15,merchants:+8},health:-8});addLog('The brigade contained the fire. The ward was saved.');}
+       else{apply({health:-20,koku:-rnd(5,10),honor:+5});addLog('Fire spread past your brigade. Chaos and loss.');}
+     }},
+  ]},
+
+  {id:'famine',
+   event:"Famine Comes",text:"Two poor harvests. The countryside empties into cities. Rice prices have tripled. The poor eat bark. You have rice in your warehouse. What kind of merchant — what kind of person — are you?",
+   choices:[
+    {label:"Sell at peak price — this is commerce",hint:"+koku, -honor, -peasants",
+     action(){let r=inv('rice');apply({inv:{rice:-r},koku:+r*8,wealth:+20,honor:-22,rel:{peasants:-25,samurai:-10}});addLog('Sold rice at famine prices. Wealthy, but the streets know your name.');}},
+    {label:"Sell at fair prices — take a smaller profit",hint:"+honor, modest koku",
+     action(){let r=inv('rice');apply({inv:{rice:-r},koku:+r*3,honor:+20,rel:{peasants:+20,samurai:+10}});addLog('Sold at fair prices. The hungry come to your stall and bow.');}},
+    {label:"Donate to the temple for free distribution",hint:"+honor, no koku",
+     action(){let r=inv('rice');apply({inv:{rice:-r},honor:+30,rel:{peasants:+28,samurai:+15,shogunate:+10}});addLog('Donated all rice through the temple. Your name is carved into its pillar.');}},
+  ]},
+
+  {id:'pilgrimage',req:()=>!G.flags.pilgrimage_done,oneShot:true,
+   event:"The Ise Pilgrimage",text:"Hundreds of thousands make the pilgrimage to Ise Shrine each year. The road fills with sandaled feet and wooden staffs. A chance for the spirit — or for commerce.",
+   choices:[
+    {label:"Walk the pilgrimage in faith",hint:"+health, +honor",
+     action(){apply({health:+15,honor:+12,rel:{peasants:+12},koku:-3,flags:{pilgrimage_done:true}});addLog('Walked to Ise. Something settled inside you on that road.');}},
+    {label:"Set up a food stall along the route",hint:"+koku, light health",
+     action(){apply({koku:+12,rel:{merchants:+6,peasants:+6},health:-5,skill:+4,flags:{pilgrimage_done:true}});addLog('Fed thousands of pilgrims. The merit is mixed but the koku is real.');}},
+    {label:"Stay and work while rivals are away",hint:"+wealth, -honor",
+     action(){apply({koku:+10,honor:-5,wealth:+12,rel:{merchants:-6},flags:{pilgrimage_done:true}});addLog('Took advantage of the empty market. Effective, if cynical.');}},
+  ]},
+
+  {id:'sankin_kotai',
+   event:"Lord's Procession",text:"A daimyo travels the Tokaido for his mandatory court attendance in Edo. His retinue of 400 needs food, gifts, lodging, and entertainment along the road. This is how fortunes are made.",
+   choices:[
+    {label:"Supply lacquerware as official gifts (needs 2 sets)",hint:"+honor, +samurai",
+     action(){if(inv('lacquerware')>=2){apply({inv:{lacquerware:-2},koku:+14,honor:+12,rel:{samurai:+15,shogunate:+8}});addLog('Lacquerware presented in the lord\'s procession. His retainer bows.');}
+       else{addLog('Not enough lacquerware.');}
+     }},
+    {label:"Broker food and lodging along the route",hint:"+koku, +skill",
+     action(){apply({koku:+10,rel:{merchants:+8,samurai:+5},skill:+6});addLog('Coordinated the procession\'s provisions. Good money, good connections.');}},
+    {label:"Watch and learn the politics",hint:"+skill, no cost",
+     action(){apply({skill:+7,honor:+3});addLog('Observed the procession closely. Power has its own choreography.');}},
+  ]},
+
+  {id:'earthquake',
+   event:"The Earth Shakes",text:"A sharp earthquake rattles Osaka before dawn. Buildings crack. The harbor temporarily drains and returns. Warehouses are damaged. People are frightened.",
+   choices:[
+    {label:"Rush to secure your goods first",hint:"Save stock",
+     action(){if(roll(60)){apply({health:-8,koku:+rnd(2,5)});addLog('Saved most goods before looters came.');}
+       else{apply({health:-15,koku:-rnd(4,8)});addLog('Injured in the scramble. Lost goods to collapse and looters.');}
+     }},
+    {label:"Help pull people from rubble",hint:"+honor, +health risk",
+     action(){apply({honor:+15,rel:{peasants:+18},health:-12});addLog('Pulled three families from collapsed buildings. Hands bleeding, heart full.');}},
+    {label:"Organize community rebuilding",hint:"+skill, +relations",
+     action(){apply({skill:+8,rel:{merchants:+10,peasants:+12},honor:+10,koku:-3});addLog('Coordinated the neighborhood reconstruction. Leadership recognized.');}},
+  ]},
+
+  {id:'false_accusation',
+   event:"False Accusation",text:"A jealous rival has accused you of smuggling before the magistrate. The accusation is false — but truth requires proof. Your reputation hangs in the balance.",
+   choices:[
+    {label:"Hire a lawyer and fight the charges",hint:"5 koku — depends on honor",
+     action(){if(G.koku>=5&&G.honor>=50){apply({koku:-5,honor:+5,rel:{shogunate:+8}});addLog('Fought the charges and won. The magistrate dismissed the case.');}
+       else{apply({koku:-5,honor:-15,rel:{shogunate:-15}});addLog('Could not mount an adequate defense. Partially guilty verdict.');}
+     }},
+    {label:"Pay a fine and move on",hint:"Lose koku and honor",
+     action(){apply({koku:-10,honor:-10,rel:{shogunate:-5}});addLog('Paid the fine to make it go away. Bitter, but free.');}},
+    {label:"Call on your guild for support",hint:"Requires guild member status",
+     action(){if(G.flags.guild_member){apply({honor:+8,rel:{merchants:+10,shogunate:+5}});addLog('The guild vouched for you. Charges dropped. Rivals noted.');}
+       else{apply({honor:-8,koku:-5});addLog('Without guild backing, alone against bureaucracy.');}
+     }},
+  ]},
+
+  {id:'dutch_medicine_shortage',req:()=>inv('medicine')>=2,
+   event:"Epidemic in the City",text:"A strange fever spreads through the tenements. The temple physician is overwhelmed. You have Dutch medicines that could help — or enrich you.",
+   choices:[
+    {label:"Donate medicines to the city physician",hint:"+honor, +health to you too",
+     action(){let m=inv('medicine');apply({inv:{medicine:-m},honor:+20,rel:{peasants:+20},health:+5});addLog('Donated medicines. The fever breaks. People call you a savior.');}},
+    {label:"Sell at a premium during the crisis",hint:"+koku, -honor",
+     action(){let m=inv('medicine');apply({inv:{medicine:-m},koku:+m*14,honor:-15,rel:{peasants:-15}});addLog('Sold medicines at crisis prices. Profitable. Remembered poorly.');}},
+    {label:"Sell at normal price — fair is fair",hint:"Moderate koku, hold honor",
+     action(){let m=inv('medicine');apply({inv:{medicine:-m},koku:+m*8,honor:+5,rel:{peasants:+8}});addLog('Sold at fair prices during the epidemic. Lives saved, conscience clean.');}},
+  ]},
+
+  {id:'poetry_contest',
+   event:"Poetry Contest",text:"The ward's haiku circle holds its annual contest. Entry requires one koku and a poem. The winner gains remarkable social standing — poets are honored even above merchants in this city.",
+   choices:[
+    {label:"Enter the contest",hint:"Skill check — high skill wins honor",
+     action(){if(G.koku>=1){apply({koku:-1});if(G.skill>=55){apply({honor:+20,rel:{samurai:+15,merchants:+10}});addLog('Won the poetry contest. Your haiku will be remembered this season.');}
+       else if(G.skill>=35){apply({honor:+8});addLog('Entered well but did not win. Applauded for trying.');}
+       else{apply({honor:-2});addLog('Your poem was… earnest. Better to be earnest than absent.');}
+     }}},
+    {label:"Watch and learn the verses",hint:"+skill, no cost",
+     action(){apply({skill:+5,honor:+3});addLog('Attended the contest as audience. Art teaches even the observer.');}},
+    {label:"Skip — commerce waits",hint:"Nothing gained",
+     action(){addLog('Skipped the poetry. Koku doesn\'t write itself.');}},
+  ]},
+
+  {id:'shogun_death',req:()=>G.year>=1651,oneShot:true,
+   event:"The Shogun Passes",text:"Tokugawa Iemitsu has died. A new Shogun means new court dynamics. Officials scramble to establish loyalties. Merchants watch to see which way the wind turns.",
+   choices:[
+    {label:"Send gifts to the new court immediately",hint:"+shogunate relations",
+     action(){apply({koku:-8,rel:{shogunate:+20,samurai:+10},honor:+8});addLog('First among merchants to send gifts to the new court. A wise investment.');}},
+    {label:"Wait and watch — don't overcommit",hint:"Safe but slow",
+     action(){apply({skill:+5,honor:+3});addLog('Watched the transition carefully. Some doors close; others open.');}},
+    {label:"Use the chaos to expand trade networks",hint:"+wealth, some risk",
+     action(){apply({wealth:+20,koku:+10,honor:-3,rel:{shogunate:-5}});addLog('Expanded aggressively during the succession confusion. Profitable but noticed.');}},
+  ]},
+
+  {id:'silk_road_rumor',
+   event:"Rumor of Silk Shortage",text:"A trader from Kyoto whispers that Satsuma's silk harvest was devastated by floods. Prices will spike in three months. You have capital. Do you act on this information?",
+   choices:[
+    {label:"Buy all the silk you can now",hint:"Speculate — 5 koku each",
+     action(){let n=Math.min(5,Math.floor(G.koku/5));if(n>0){apply({koku:-n*5,inv:{silk:+n}});addLog('Bought '+n+' silk bolts on the rumor. In three months, the price doubled.');}
+       else{addLog('Not enough koku to speculate.');}
+     }},
+    {label:"Tell your guild — earn favor",hint:"+merchants",
+     action(){apply({rel:{merchants:+15},honor:+5,koku:+3});addLog('Shared the intelligence with the guild. Earned favors and a small fee.');}},
+    {label:"Ignore it — rumors are cheap",hint:"Nothing gained",
+     action(){apply({skill:+2});addLog('Ignored the rumor. Perhaps wisdom, perhaps missed fortune.');}},
+  ]},
+
+  {id:'smuggler_contact',
+   event:"The Smuggler's Offer",text:"A man with no guild seal and a quick eye approaches you at dusk. He offers Dutch silver and rare spices — clearly smuggled past Dejima's controls — at half the market price. The risk of accepting is enormous.",
+   choices:[
+    {label:"Buy the smuggled goods",hint:"High profit, very high risk",
+     action(){if(roll(65)){apply({koku:+20,wealth:+15,honor:-8,rel:{shogunate:-10}});addLog('Bought smuggled goods. Sold them discreetly. Profitable, dangerous.');}
+       else{apply({koku:-5,honor:-20,rel:{shogunate:-20},flags:{arrested:true}});addLog('A shogunate spy was watching. Goods seized, heavy fines, brief arrest.');}
+     }},
+    {label:"Report him to the magistrate",hint:"+shogunate, +honor",
+     action(){apply({rel:{shogunate:+15},honor:+10,koku:+3});addLog('Reported the smuggler. Received a magistrate\'s commendation.');}},
+    {label:"Walk away silently",hint:"Safe, no consequence",
+     action(){apply({honor:+3});addLog('Walked away. Some opportunities are traps.');}},
+  ]},
+
+  {id:'sake_brewery_invest',
+   event:"Brewery Investment",text:"A Nada sake brewer seeks a partner. 15 koku investment for 30% of next year's profits. Sake is stable demand — warriors, merchants, and peasants all drink.",
+   choices:[
+    {label:"Invest 15 koku in the brewery",hint:"Stable returns",
+     action(){if(G.koku>=15){apply({koku:-15+rnd(10,25),wealth:+10,rel:{merchants:+8}});addLog('Invested in the Nada brewery. Returns came in over the following seasons.');}
+       else{addLog('Not enough koku to invest in the brewery.');}
+     }},
+    {label:"Offer labor and management instead",hint:"+skill, smaller return",
+     action(){apply({skill:+8,koku:+rnd(4,10),rel:{merchants:+5}});addLog('Managed brewery logistics in lieu of capital. Learned the trade.');}},
+    {label:"Decline — sake is volatile",hint:"Safe, nothing gained",
+     action(){addLog('Declined the brewery. Your capital stays liquid.');}},
+  ]},
+
+  {id:'bandit_road',req:()=>G.location==='tokaido',
+   event:"Bandits on the Tokaido",text:"Masked men block the road outside Hamamatsu. They demand your goods or your life. Your traveling companions scatter.",
+   choices:[
+    {label:"Hand over goods to save your life",hint:"Lose inventory",
+     action(){let lost=Math.floor((inv('silk')+inv('copper')+inv('lacquerware'))/2);apply({inv:{silk:-Math.floor(inv('silk')/2),copper:-Math.floor(inv('copper')/2),lacquerware:-Math.floor(inv('lacquerware')/2)},health:-5});addLog('Surrendered goods to the bandits. Arrived alive, half-empty.');}},
+    {label:"Refuse and fight — you're armed",hint:"Skill check — dangerous",
+     action(){if(G.skill>=45&&G.health>50){apply({health:-15,honor:+10});addLog('Fought off the bandits. Three injured, none dead. Your name spreads on the road.');}
+       else{apply({health:-30,koku:-rnd(5,10),honor:+3});addLog('Fought bravely, lost badly. Limped to the next inn.');}
+     }},
+    {label:"Run — abandon your cart and flee",hint:"+health risk, lose goods",
+     action(){apply({health:-8,inv:{silk:-inv('silk'),copper:-inv('copper')},honor:-5});addLog('Fled through the bamboo. Alive, emptyhanded, embarrassed.');}},
+  ]},
+
+  {id:'honor_duel',req:()=>G.relations.samurai<30,
+   event:"Samurai Insult",text:"A low-ranking samurai has publicly called you a grasping merchant with no dignity. In the Edo period, a merchant cannot challenge a samurai — but you can respond with conduct that restores your standing.",
+   choices:[
+    {label:"Bear it with dignity — reply with poetry",hint:"+honor, unexpected move",
+     action(){apply({honor:+12,rel:{samurai:+10},skill:+4});addLog('Responded with a perfect verse. The samurai was silenced.');}},
+    {label:"Offer him sake and ask for conversation",hint:"+samurai, costs koku",
+     action(){apply({koku:-2,rel:{samurai:+15},honor:+6});addLog('Offered sake instead of anger. He became a useful contact.');}},
+    {label:"Walk away — merchants have better things to do",hint:"Nothing lost, nothing gained",
+     action(){apply({honor:-3});addLog('Walked away. The street laughed. Some forgot by morning.');}},
+  ]},
+
+  {id:'flood',
+   event:"Flooding Season",text:"Typhoon rains flood the rice paddies south of Osaka. Transportation is blocked for weeks. Your deliveries are stalled, but so is everyone else's. Who has rice stored will rule the market.",
+   choices:[
+    {label:"Release your rice stores slowly at fair price",hint:"+honor, steady koku",
+     action(){let r=inv('rice');apply({inv:{rice:-r},koku:+r*4,honor:+12,rel:{peasants:+15}});addLog('Released rice reserves gradually. Steadied the market. People remember.');}},
+    {label:"Use the delay to buy more goods cheaply",hint:"Speculate on flood prices",
+     action(){let n=Math.min(4,Math.floor(G.koku/3));apply({koku:-n*3,inv:{silk:+n},wealth:+10});addLog('Bought cheap while others panicked. Strategic.');}},
+    {label:"Organize mule caravans to bypass the flood",hint:"+skill, +koku",
+     action(){apply({skill:+8,koku:+rnd(6,12),rel:{merchants:+10}});addLog('Organized alternative routes around the flood. Merchants paid well for access.');}},
+  ]},
+];
+
+// ============================================================
+// EVENT ENGINE
+// ============================================================
+let currentEvent=null;
+let pendingEvent=true;
+
+function getNextEvent(){
+  // Filter events that haven't been used (oneShot) and meet requirements
+  let pool=EVENTS.filter(e=>{
+    if(e.oneShot&&G.eventHistory.includes(e.id))return false;
+    if(e.req&&!e.req())return false;
+    return true;
+  });
+  // Avoid the last 4 used events
+  let recent=G.eventHistory.slice(0,4);
+  let preferred=pool.filter(e=>!recent.includes(e.id));
+  if(preferred.length>0)pool=preferred;
+  if(!pool.length)pool=EVENTS.filter(e=>!e.req||e.req());
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function showEvent(){
+  let ev=getNextEvent();
+  currentEvent=ev;
+  G.eventHistory.unshift(ev.id);
+  if(G.eventHistory.length>20)G.eventHistory.pop();
+
+  document.getElementById('outcome-area').innerHTML='';
+  document.getElementById('age-btn').style.display='none';
+
+  document.getElementById('event-area').innerHTML=`
+    <div class="event-card">
+      <div class="event-type">${ev.event}</div>
+      <div class="event-text">${ev.text}</div>
+    </div>`;
+
+  let ch='';
+  ev.choices.forEach((c,i)=>{
+    ch+=`<button class="choice-btn" onclick="makeChoice(${i})">${c.label}${c.hint?`<span class="choice-hint">${c.hint}</span>`:''}</button>`;
+  });
+  document.getElementById('choices-area').innerHTML=`<div class="choices">${ch}</div>`;
+  saveState();
+}
+
+function makeChoice(i){
+  if(!currentEvent)return;
+  currentEvent.choices[i].action();
+  advSeasons(rnd(1,2));
+  checkAndRender();
+  document.getElementById('choices-area').innerHTML='';
+  document.getElementById('age-btn').style.display='block';
+  renderLog();
+  saveState();
+}
+
+function nextYear(){
+  document.getElementById('age-btn').style.display='none';
+  showEvent();
+}
+
+function showOutcome(msg,type='neutral'){
+  let d=document.getElementById('outcome-area');
+  d.innerHTML=`<div class="outcome-banner outcome-${type}">${msg}</div>`;
+}
+
+function checkAndRender(){
+  renderHeader();renderLifebar();
+  if(G.health<=0){showDeath();return;}
+  if(G.age>=78){showDeath(true);return;}
+}
+
+function renderLog(){
+  let lh=G.log.slice(0,12).map(l=>{
+    let m=l.match(/^(\d+):(.*)/);
+    if(m)return `<div class="log-entry"><span class="log-year">${m[1]}</span><span>${m[2]}</span></div>`;
+    return `<div class="log-entry">${l}</div>`;
+  }).join('');
+  document.getElementById('log-area').innerHTML=lh;
+}
+
+function showDeath(oldAge=false){
+  let d=document.getElementById('death-screen');
+  d.style.display='block';
+  document.getElementById('d-title').textContent=oldAge?'You lived a full life':'You have passed on';
+  document.getElementById('d-sub').textContent='Age '+G.age+' · '+SEASONS[G.season]+' · '+G.year+' ('+era(G.year)+')';
+  document.getElementById('d-stats').innerHTML=[
+    ['Honor',G.honor],['Wealth',G.wealth],['Skill',G.skill],['Koku',G.koku]
+  ].map(([l,v])=>`<div class="ds"><div class="ds-l">${l}</div><div class="ds-v">${v}</div></div>`).join('');
+  document.getElementById('d-epitaph').textContent=getEpitaph();
+  document.getElementById('d-log').innerHTML=G.log.slice(0,8).map(l=>{
+    let m=l.match(/^(\d+):(.*)/);
+    return `<div class="death-log-e"><span class="death-log-yr">${m?m[1]:''}</span> ${m?m[2]:l}</div>`;
+  }).join('');
+}
+
+function getEpitaph(){
+  if(G.honor>=80)return '"A merchant of great virtue, whose name was spoken with reverence long after his final season."';
+  if(G.koku>=100)return '"He died wealthy beyond counting — though the koku went cold when he did."';
+  if(G.relations.dutch>=70)return '"A bridge between two worlds. Neither shore claimed him fully."';
+  if(G.flags.rangaku_student)return '"He drank from forbidden wells of knowledge and found them sweet."';
+  if(G.flags.married)return '"Yuki burned incense for him every morning for thirty years after."';
+  if(G.honor<30)return '"Few mourned. Fewer spoke his name. The market filled the space he left."';
+  if(G.skill>=70)return '"His methods outlasted him, taught to apprentices who never knew his face."';
+  return '"An ordinary life in extraordinary times. Most lives are."';
+}
+
+// ============================================================
+// TAB SYSTEM
+// ============================================================
+function switchTab(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  event.target.closest('.tab').classList.add('active');
+  if(name==='stats')renderStats();
+  if(name==='inventory')renderInventory();
+  if(name==='jobs')renderJobs();
+  if(name==='activities')renderActivities();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init(){
+  renderHeader();renderLifebar();renderLog();
+  // Show first event
+  if(G.eventHistory.length===0){
+    // Force start event
+    currentEvent=EVENTS[0];
+    G.eventHistory.push('start');
+    document.getElementById('outcome-area').innerHTML='';
+    document.getElementById('age-btn').style.display='none';
+    document.getElementById('event-area').innerHTML=`
+      <div class="event-card">
+        <div class="event-type">${EVENTS[0].event}</div>
+        <div class="event-text">${EVENTS[0].text}</div>
+      </div>`;
+    let ch='';
+    EVENTS[0].choices.forEach((c,i)=>{
+      ch+=`<button class="choice-btn" onclick="makeChoice(${i})">${c.label}${c.hint?`<span class="choice-hint">${c.hint}</span>`:''}</button>`;
+    });
+    document.getElementById('choices-area').innerHTML=`<div class="choices">${ch}</div>`;
+  } else {
+    showEvent();
+  }
+}
+
+init();
+</script>
+</body>
+</html>
